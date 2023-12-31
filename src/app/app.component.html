@@ -11,9 +11,27 @@
     <h3>infor</h3>
     <div class="form-group">
       <input type="text" placeholder="name" formControlName="name" />
+      <div
+        class="show-err-mgs"
+        *ngIf="
+          someForm.get('name')?.invalid &&
+          (someForm.get('name')?.touched || someForm.get('name')?.dirty)
+        "
+      >
+        errors
+      </div>
     </div>
     <div class="form-group">
       <input type="text" placeholder="age" formControlName="age" />
+      <div
+        class="show-err-mgs"
+        *ngIf="
+          someForm.get('age')?.invalid &&
+          (someForm.get('age')?.touched || someForm.get('age')?.dirty)
+        "
+      >
+        errors
+      </div>
     </div>
   </div>
   <br />
@@ -22,11 +40,22 @@
     <div formGroupName="address">
       <div class="form-group">
         <input type="text" placeholder="code" formControlName="code" />
+        <div
+          class="show-err-mgs"
+          *ngIf="
+            someForm.get('address.code')?.invalid &&
+            (someForm.get('address.code')?.touched ||
+              someForm.get('address.code')?.dirty)
+          "
+        >
+          errors
+        </div>
       </div>
     </div>
   </div>
 
   <div formArrayName="cart">
+    <h3>cart</h3>
     @for (item of cartControls; let index = $index ; track index) {
     <div [formGroupName]="index">
       <div class="form-group">
@@ -35,6 +64,16 @@
           placeholder="productId"
           formControlName="productId"
         />
+        <div
+          class="show-err-mgs"
+          *ngIf="
+            cartControls.at(index)?.get('productId')?.invalid &&
+            (cartControls.at(index)?.get('productId')?.touched ||
+              cartControls.at(index)?.get('productId')?.dirty)
+          "
+        >
+          errors
+        </div>
       </div>
       <div class="form-group">
         <input
@@ -42,6 +81,16 @@
           placeholder="productName"
           formControlName="productName"
         />
+        <div
+          class="show-err-mgs"
+          *ngIf="
+            cartControls.at(index)?.get('productName')?.invalid &&
+            (cartControls.at(index)?.get('productName')?.touched ||
+              cartControls.at(index)?.get('productName')?.dirty)
+          "
+        >
+          errors
+        </div>
       </div>
     </div>
     } @empty { }
@@ -49,3 +98,8 @@
 
   <button>submit</button>
 </form>
+
+<div style="display: flex; gap: 4px; margin-top: 8px">
+  <button (click)="handleClearValidator()">clear validators</button>
+  <button (click)="handleAddValidator()">add validators</button>
+</div>

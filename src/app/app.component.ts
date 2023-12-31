@@ -23,18 +23,35 @@ import { FormAction } from '../enums/form.enum';
 export class AppComponent implements OnInit {
   title = 'toggle-validators';
   readonly someForm = inject(NonNullableFormBuilder).group({
-    name: [''],
+    name: ['', [Validators.required]],
     age: [''],
     address: new FormGroup({
-      code: new FormControl(''),
+      code: new FormControl('', [Validators.required]),
     }),
     cart: new FormArray([
       new FormGroup({
-        productId: new FormControl(''),
-        productName: new FormControl(''),
+        productId: new FormControl('', [Validators.required]),
+        productName: new FormControl('', [Validators.required]),
       }),
     ]),
   });
+  config = {
+    name: {
+      validators: [Validators.required],
+    },
+    address: {
+      code: {
+        validators: [Validators.required],
+      },
+    },
+    cart: [
+      {
+        productId: {
+          validators: [Validators.required],
+        },
+      },
+    ],
+  };
 
   ngOnInit(): void {}
 
@@ -46,18 +63,35 @@ export class AppComponent implements OnInit {
 
   //#region form handling
   handleSubmitForm() {
-    const config = {
-      name: {
-        validators: [Validators.required],
-      },
-      address: {
-        code: {
-          validators: [Validators.required],
+    if (this.someForm.valid) {
+      console.log(this.someForm.getRawValue());
+    } else {
+      FormHelper.mutateForm(this.someForm, FormAction.TouchedAndDirty);
+    }
+  }
+
+  handleClearValidator() {
+    FormHelper.mutateForm(
+      this.someForm,
+      FormAction.ClearValidators,
+      undefined,
+      {
+        updateValueAndValidity: true,
+        formStatus: {
+          markAsPristine: true,
+          markAsUntouched: true,
         },
-      },
-      cart: [{ productId: [Validators.required] }],
-    };
-    FormHelper.mutateForm(this.someForm, FormAction.AddValidators, config);
+      }
+    );
+  }
+
+  handleAddValidator() {
+    FormHelper.mutateForm(
+      this.someForm,
+      FormAction.AddValidators,
+      this.config,
+      { updateValueAndValidity: true, formStatus: { markAsDirty: true } }
+    );
   }
   //#endregion form handling
 }
