@@ -23,19 +23,6 @@ import { CartService } from '../components/cart.service';
 })
 export class AppComponent implements OnInit {
   title = 'toggle-validators';
-  readonly someForm = inject(NonNullableFormBuilder).group({
-    name: ['', [Validators.required]],
-    age: [''],
-    address: new FormGroup({
-      code: new FormControl('', [Validators.required]),
-    }),
-    cart: new FormArray([
-      new FormGroup({
-        productId: new FormControl('', [Validators.required]),
-        productName: new FormControl('', [Validators.required]),
-      }),
-    ]),
-  });
   config = {
     name: {
       validators: [Validators.required],
@@ -56,6 +43,19 @@ export class AppComponent implements OnInit {
 
   //#region inject services
   readonly cartService = inject(CartService);
+  readonly someForm = inject(NonNullableFormBuilder).group({
+    name: ['', [Validators.required]],
+    age: [''],
+    address: new FormGroup({
+      code: new FormControl('', [Validators.required]),
+    }),
+    cart: new FormArray([
+      new FormGroup({
+        productId: new FormControl('', [Validators.required]),
+        productName: new FormControl('', [Validators.required]),
+      }),
+    ]),
+  });
   //#endregion inject services
 
   quantityEffect = effect(() => {
