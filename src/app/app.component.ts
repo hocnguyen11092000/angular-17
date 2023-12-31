@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import * as _ from 'lodash';
@@ -12,6 +12,7 @@ import {
 } from '@angular/forms';
 import { FormHelper } from '../helpers/form.helper';
 import { FormAction } from '../enums/form.enum';
+import { CartService } from '../components/cart.service';
 
 @Component({
   selector: 'app-root',
@@ -52,6 +53,18 @@ export class AppComponent implements OnInit {
       },
     ],
   };
+
+  //#region inject services
+  readonly cartService = inject(CartService);
+  //#endregion inject services
+
+  quantityEffect = effect(() => {
+    console.log(`change from cart ${this.cartService.quantity$$()}`);
+  });
+
+  duplicateQuantity$$ = computed(() => {
+    return this.cartService.quantity$$() * 2;
+  });
 
   ngOnInit(): void {}
 

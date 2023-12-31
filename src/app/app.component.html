@@ -1,4 +1,11 @@
 <h2>hello world</h2>
+<header>
+  <div class="header">
+    {{ cartService.quantity$$() }}
+    {{ duplicateQuantity$$() }}
+  </div>
+</header>
+<router-outlet></router-outlet>
 
 <div>pristine: {{ someForm.pristine | json }}</div>
 <div>invalid: {{ someForm.invalid | json }}</div>
