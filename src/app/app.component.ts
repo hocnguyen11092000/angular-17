@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { FormHelper } from '../helpers/form.helper';
 import { FormAction } from '../enums/form.enum';
-import { CartService } from '../components/cart.service';
+import { CartService } from '../components/cart/cart.service';
 
 @Component({
   selector: 'app-root',
@@ -79,7 +79,10 @@ export class AppComponent implements OnInit {
     if (this.someForm.valid) {
       console.log(this.someForm.getRawValue());
     } else {
-      FormHelper.mutateForm(this.someForm, FormAction.TouchedAndDirty);
+      FormHelper.mutateForm(
+        this.someForm.get('cart') as FormArray,
+        FormAction.TouchedAndDirty
+      );
     }
   }
 

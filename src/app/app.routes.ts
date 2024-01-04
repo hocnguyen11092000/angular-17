@@ -4,11 +4,17 @@ export const routes: Routes = [
   {
     path: 'cart',
     loadComponent: async () =>
-      (await import('../components/cart.component')).CartComponent,
+      (await import('../components/cart/cart.component')).CartComponent,
+  },
+  {
+    path: 'form-array',
+    loadComponent: async () =>
+      (await import('../components/form-array/form-array.component'))
+        .FormArrayComponent,
   },
   {
     path: '**',
-    redirectTo: 'cart',
+    redirectTo: 'form-array',
     pathMatch: 'full',
   },
 ];
