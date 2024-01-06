@@ -13,6 +13,12 @@ export const routes: Routes = [
         .FormArrayComponent,
   },
   {
+    path: 'files',
+    loadComponent: async () =>
+      (await import('../components/files/upload-file.component'))
+        .UploadFileComponent,
+  },
+  {
     path: '**',
     redirectTo: 'form-array',
     pathMatch: 'full',
