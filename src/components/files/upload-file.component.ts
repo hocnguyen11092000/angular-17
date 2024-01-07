@@ -9,7 +9,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FileItemComponent } from './file-item.component';
 import _ from 'lodash';
-import { BehaviorSubject, Subject, concatMap, from, tap } from 'rxjs';
+import { BehaviorSubject, Subject, concatMap, filter, from, tap } from 'rxjs';
 import { FileService } from './file.service';
 import { CommonModule } from '@angular/common';
 import { FileItemSkeleton } from './file-item-skeletone.component';
@@ -27,9 +27,15 @@ import { FileItemSkeleton } from './file-item-skeletone.component';
         gap: 12px;
         flex-wrap: wrap;
       }
+
+      .file-item {
+        flex-basis: 35%;
+      }
     </style>
     <div class="upload-file">
-      <button (click)="file.click()">Tải tệp lên</button>
+      <button class="mb-3" (click)="handleClickBtnUploadFile(file)">
+        Tải tệp lên
+      </button>
       <input
         #file
         type="file"
@@ -41,10 +47,13 @@ import { FileItemSkeleton } from './file-item-skeletone.component';
         <ng-container *ngIf="count.length > 0">
           <div class="file-container">
             <ng-container *ngFor="let item of count; let i = index">
-              <app-file-item-skeleton
-                [item]="getFileByIndex(i)"
-                [count]="count.length"
-              ></app-file-item-skeleton>
+              <div class="file-item">
+                <app-file-item-skeleton
+                  (oDeleteitem)="handleDeleteFile($event)"
+                  [item]="getFileByIndex(i)"
+                  [count]="count.length"
+                ></app-file-item-skeleton>
+              </div>
             </ng-container>
           </div>
         </ng-container>
@@ -106,14 +115,37 @@ export class UploadFileComponent implements ControlValueAccessor, OnInit {
   //#endregion mandatory for custom control value asessor
 
   //#region handle upload file
+  handleClickBtnUploadFile(input: HTMLInputElement) {
+    _.set(input, 'value', null);
+    input.click();
+  }
+
   handleUploadFile(event: Event) {
     const files = _.get(event, 'target.files') as Array<File> | undefined;
 
     if (files && _.size(files)) {
-      //assume files are valid
-      this.countFileSelected$.next(new Array(_.size(files)));
+      const uploadFileName = _.map(files, (file) => {
+        return _.get(file, 'name');
+      });
 
-      from(files)
+      //assume files are valid
+      const newFiles = _.intersection(
+        uploadFileName,
+        _.map(_.cloneDeep(this.files), (file) => _.get(file, 'name'))
+      );
+
+      const concatNumber = _.size(files) - _.size(newFiles);
+
+      this.countFileSelected$.next(
+        new Array(_.size(this.files) + concatNumber)
+      );
+      const filterFile = _.filter(
+        files,
+        (file) => !newFiles.includes(_.get(file, 'name'))
+      );
+      if (!_.size(filterFile)) return;
+
+      from(filterFile)
         .pipe(
           concatMap((file) => {
             return this.fileService.uploadFile(_.get(file, 'name'));
@@ -121,11 +153,22 @@ export class UploadFileComponent implements ControlValueAccessor, OnInit {
         )
         .subscribe((file) => {
           if (file) {
-            this.files.push(file);
+            this.files = [...this.files, file];
             this.cdr.markForCheck();
           }
         });
     }
+  }
+
+  handleDeleteFile(fileName: unknown) {
+    if (!fileName) return;
+
+    this.files = _.filter(
+      this.files,
+      (file) => _.get(file, 'name') !== fileName
+    );
+    this.countFileSelected$.next(new Array(_.size(this.files)));
+    this.cdr.markForCheck();
   }
   //#endregion handle upload file
 

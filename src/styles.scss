@@ -27,6 +27,10 @@ button {
 }
 
 .spinner-border {
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: text-bottom;
+  border: 0.2em solid currentColor;
   border-color: #333;
   border-right-color: transparent;
 }
