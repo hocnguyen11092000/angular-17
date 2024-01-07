@@ -8,6 +8,8 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { ShowFileNamePipe } from '../../pipes/show-file-name.pipe';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 @Component({
   selector: 'app-file-item-skeleton',
@@ -78,7 +80,9 @@ import {
           width="80"
         />
         <div class="file-desc" *ngIf="item?.['name']">
-          <div class="file-name">{{item?.['name'] || ''}}</div>
+          <div class="file-name" [tooltip]="item?.['name'] + ''">
+            {{(item?.['name'] || '') | showFileName}}
+          </div>
           <div class="file-download">
             <svg
               width="24"
@@ -128,7 +132,7 @@ import {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ShowFileNamePipe, TooltipModule],
 })
 export class FileItemSkeleton {
   @Input() count: number = 0;
