@@ -38,7 +38,12 @@ export class FormHelper {
           form.markAsTouched();
           break;
         case FormAction.Reset:
-          form.reset(_.get(options, 'resetValue', undefined));
+          form.reset(
+            _.get(
+              _.get(options, 'resetValue', {}),
+              this.getControlName(form) || ''
+            )
+          );
           break;
         case FormAction.ClearErrors:
           form.setErrors(null);

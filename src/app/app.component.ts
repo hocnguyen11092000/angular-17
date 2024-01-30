@@ -124,7 +124,9 @@ export class AppComponent implements OnInit {
   }
 
   handleResetForm() {
-    FormHelper.mutateForm(this.someForm, FormAction.Reset);
+    FormHelper.mutateForm(this.someForm, FormAction.Reset, undefined, {
+      resetValue: { name: 'name' },
+    });
     console.log(this.someForm);
   }
 
