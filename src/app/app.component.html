@@ -1,13 +1,33 @@
 <h2>hello world</h2>
-<!-- <header>
-  <div class="header">
-    {{ cartService.quantity$$() }}
-    {{ duplicateQuantity$$() }}
-  </div>
-</header> -->
+<nav>
+  <ul>
+    <li
+      routerLink="form-array"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: false }"
+    >
+      Form array
+    </li>
+    <li
+      routerLink="files"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      files
+    </li>
+    <li
+      routerLink="cart"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      cart
+    </li>
+  </ul>
+</nav>
+<button (click)="handleNavigate()">navigate</button>
 <router-outlet></router-outlet>
 
-<!-- <div>pristine: {{ someForm.pristine | json }}</div>
+<div>pristine: {{ someForm.pristine | json }}</div>
 <div>invalid: {{ someForm.invalid | json }}</div>
 <div>touch: {{ someForm.touched | json }}</div>
 <div>dirty: {{ someForm.dirty | json }}</div>
@@ -109,4 +129,7 @@
 <div style="display: flex; gap: 4px; margin-top: 8px">
   <button (click)="handleClearValidator()">clear validators</button>
   <button (click)="handleAddValidator()">add validators</button>
-</div> -->
+  <button (click)="handleResetForm()">reset form</button>
+  <button (click)="handleClearErrors()">clear errors</button>
+  <button (click)="handleMarkAsPristine()">markAsPristine</button>
+</div>

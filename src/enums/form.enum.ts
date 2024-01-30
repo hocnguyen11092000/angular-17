@@ -6,4 +6,6 @@ export enum FormAction {
   Untouched = 'untouched',
   AddValidators = 'addValidators',
   ClearValidators = 'clearValidators',
+  Reset = 'reset',
+  ClearErrors = 'clearErrors',
 }

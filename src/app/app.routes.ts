@@ -1,10 +1,12 @@
 import { Routes } from '@angular/router';
+import { canLeavate } from '../guards/can-deactivate.guard';
 
 export const routes: Routes = [
   {
     path: 'cart',
     loadComponent: async () =>
       (await import('../components/cart/cart.component')).CartComponent,
+    canDeactivate: [canLeavate],
   },
   {
     path: 'form-array',

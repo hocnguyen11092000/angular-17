@@ -1,11 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
+  OnInit,
   inject,
   signal,
 } from '@angular/core';
 import _ from 'lodash';
 import { CartService } from './cart.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-cart',
@@ -26,6 +29,11 @@ import { CartService } from './cart.service';
     </style>
 
     <h2>hello from cart component</h2>
+    <header>
+      <div class="header">
+        {{ cartServices.quantity$$() }}
+      </div>
+    </header>
 
     <div class="product-container">
       @for (item of products$$(); let idx = $index; track idx) {
@@ -45,7 +53,16 @@ import { CartService } from './cart.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class CartComponent {
+export class CartComponent implements OnInit {
+  isChanged = true;
+
+  @HostListener('window:beforeunload', ['$event'])
+  doSomething(event: BeforeUnloadEvent) {
+    if (this.isChanged) {
+      event.preventDefault();
+    }
+  }
+
   //#region signals
   products$$ = signal([
     {
@@ -63,8 +80,19 @@ export class CartComponent {
   ]);
   //#endregion signals
 
+  private readonly activateRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  ngOnInit(): void {
+    this.activateRoute.queryParams.subscribe(console.log);
+    this.router.navigate(['.'], {
+      queryParams: { test: 'âfafaf' },
+      relativeTo: this.activateRoute,
+    });
+  }
+
   //#region inject services
-  private readonly cartServices = inject(CartService);
+  readonly cartServices = inject(CartService);
   //#endregion inject services
 
   handleAddToCart(item: any) {

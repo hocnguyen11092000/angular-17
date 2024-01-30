@@ -34,6 +34,12 @@ export class FormHelper {
         case FormAction.Untouched:
           form.markAsTouched();
           break;
+        case FormAction.Reset:
+          form.reset(_.get(options, 'resetValue', undefined));
+          break;
+        case FormAction.ClearErrors:
+          form.setErrors(null);
+          break;
         case FormAction.AddValidators:
           if (config) {
             const validators = (_.get(config, 'validators') ||

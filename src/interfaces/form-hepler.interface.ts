@@ -7,6 +7,7 @@ export interface IFormHelperOptions {
     markAsDirty?: boolean;
     markAsPristine?: boolean;
   };
+  resetValue?: Object | undefined;
 }
 
 export interface IUpdateValidityOptions {

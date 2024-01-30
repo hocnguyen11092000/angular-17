@@ -1,7 +1,5 @@
-import { Component, OnInit, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
-import * as _ from 'lodash';
+import { Component, OnInit, computed, effect, inject } from '@angular/core';
 import {
   FormArray,
   FormControl,
@@ -10,14 +8,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { FormHelper } from '../helpers/form.helper';
-import { FormAction } from '../enums/form.enum';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CartService } from '../components/cart/cart.service';
+import { FormAction } from '../enums/form.enum';
+import { FormHelper } from '../helpers/form.helper';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -42,6 +42,9 @@ export class AppComponent implements OnInit {
   };
 
   //#region inject services
+  private readonly activateRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
   readonly cartService = inject(CartService);
   readonly someForm = inject(NonNullableFormBuilder).group({
     name: ['', [Validators.required]],
@@ -66,7 +69,15 @@ export class AppComponent implements OnInit {
     return this.cartService.quantity$$() * 2;
   });
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // this.activateRoute.queryParams.subscribe(console.log);
+    // this.router.navigate(['.'], {
+    //   queryParams: { test: 'âfafaf' },
+    //   relativeTo: this.activateRoute,
+    // });
+
+    console.log(this.someForm);
+  }
 
   //#region getter, setter
   get cartControls() {
@@ -99,6 +110,8 @@ export class AppComponent implements OnInit {
         },
       }
     );
+
+    console.log(this.someForm);
   }
 
   handleAddValidator() {
@@ -108,6 +121,30 @@ export class AppComponent implements OnInit {
       this.config,
       { updateValueAndValidity: true, formStatus: { markAsDirty: true } }
     );
+  }
+
+  handleResetForm() {
+    FormHelper.mutateForm(this.someForm, FormAction.Reset);
+    console.log(this.someForm);
+  }
+
+  handleClearErrors() {
+    FormHelper.mutateForm(this.someForm, FormAction.ClearErrors);
+    console.log(this.someForm);
+  }
+
+  handleMarkAsPristine() {
+    FormHelper.mutateForm(this.someForm, FormAction.Pristine, undefined, {
+      updateValueAndValidity: true,
+    });
+    console.log(this.someForm);
+  }
+
+  handleNavigate() {
+    this.router.navigate(['.'], {
+      queryParams: { test: Math.random() },
+      relativeTo: this.activateRoute,
+    });
   }
   //#endregion form handling
 }

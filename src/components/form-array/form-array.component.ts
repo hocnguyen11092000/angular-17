@@ -52,12 +52,7 @@ export class FormArrayComponent implements OnInit {
   }
 
   addFormArray() {
-    this.array.push(
-      new FormControl([
-        { fileName: Math.random() },
-        { fileName: Math.random() },
-      ])
-    );
+    this.array.push(new FormControl([]));
   }
 
   handleSubmitForm() {
@@ -70,8 +65,6 @@ export class FormArrayComponent implements OnInit {
   handleRandomPatchValue() {
     const randomNumber = Math.floor(Math.random() * 10);
 
-    this.array.at(randomNumber).patchValue({
-      fileName: randomNumber,
-    });
+    this.array.at(randomNumber).patchValue({});
   }
 }
