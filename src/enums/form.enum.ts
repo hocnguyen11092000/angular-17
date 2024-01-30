@@ -8,4 +8,5 @@ export enum FormAction {
   ClearValidators = 'clearValidators',
   Reset = 'reset',
   ClearErrors = 'clearErrors',
+  Mixin = 'mixin',
 }

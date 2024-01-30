@@ -18,6 +18,9 @@ export class FormHelper {
   ) {
     if (form instanceof FormControl) {
       switch (action) {
+        case FormAction.Mixin:
+          // TODO: set at options parameter
+          break;
         case FormAction.Dirty:
           form.markAsDirty();
           break;

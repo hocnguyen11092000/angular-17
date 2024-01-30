@@ -140,6 +140,16 @@ export class AppComponent implements OnInit {
     console.log(this.someForm);
   }
 
+  handleMixinFormStatus() {
+    FormHelper.mutateForm(this.someForm, FormAction.Mixin, undefined, {
+      formStatus: {
+        markAsDirty: true,
+        markAsTouched: true,
+      },
+    });
+    console.log(this.someForm);
+  }
+
   handleNavigate() {
     this.router.navigate(['.'], {
       queryParams: { test: Math.random() },
