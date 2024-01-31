@@ -21,6 +21,11 @@ export const routes: Routes = [
         .UploadFileComponent,
   },
   {
+    path: 'defer',
+    loadComponent: async () =>
+      (await import('../components/defer/defer.component')).DeferComponent,
+  },
+  {
     path: '**',
     redirectTo: 'form-array',
     pathMatch: 'full',

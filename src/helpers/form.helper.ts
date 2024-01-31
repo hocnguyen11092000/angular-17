@@ -38,6 +38,7 @@ export class FormHelper {
           form.markAsTouched();
           break;
         case FormAction.Reset:
+          // reset values of control, errors and validations still work, control marksAsPristine
           form.reset(
             _.get(
               _.get(options, 'resetValue', {}),
@@ -46,6 +47,7 @@ export class FormHelper {
           );
           break;
         case FormAction.ClearErrors:
+          // form after clear errors is Valid
           form.setErrors(null);
           break;
         case FormAction.AddValidators:
