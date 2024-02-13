@@ -9,6 +9,7 @@ import {
 import _ from 'lodash';
 import { CartService } from './cart.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TestService } from '../../services/test.service';
 
 @Component({
   selector: 'app-cart',
@@ -35,6 +36,7 @@ import { ActivatedRoute, Router } from '@angular/router';
       </div>
     </header>
 
+    <i>{{ testService.name }}</i>
     <div class="product-container">
       @for (item of products$$(); let idx = $index; track idx) {
       <div class="product">
@@ -80,9 +82,6 @@ export class CartComponent implements OnInit {
   ]);
   //#endregion signals
 
-  private readonly activateRoute = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-
   ngOnInit(): void {
     this.activateRoute.queryParams.subscribe(console.log);
     this.router.navigate(['.'], {
@@ -93,6 +92,9 @@ export class CartComponent implements OnInit {
 
   //#region inject services
   readonly cartServices = inject(CartService);
+  private readonly activateRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  readonly testService = inject(TestService);
   //#endregion inject services
 
   handleAddToCart(item: any) {

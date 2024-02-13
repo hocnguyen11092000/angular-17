@@ -1,38 +1,14 @@
 <h2>hello world</h2>
+<h2>{{ testService.name }}</h2>
 <nav>
   <ul>
-    <li
-      routerLink="form-array"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: false }"
-    >
-      Form array
-    </li>
-    <li
-      routerLink="files"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      files
-    </li>
-    <li
-      routerLink="cart"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      cart
-    </li>
-    <li
-      routerLink="defer"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      defer
-    </li>
+    <li routerLink="form-array" routerLinkActive="active">Form array</li>
+    <li routerLink="files" routerLinkActive="active">files</li>
+    <li routerLink="cart" routerLinkActive="active">cart</li>
+    <li routerLink="defer" routerLinkActive="active">defer</li>
   </ul>
 </nav>
 <button (click)="handleNavigate()">navigate</button>
-<router-outlet></router-outlet>
 
 <div>pristine: {{ someForm.pristine | json }}</div>
 <div>invalid: {{ someForm.invalid | json }}</div>
@@ -141,3 +117,5 @@
   <button (click)="handleMarkAsPristine()">markAsPristine</button>
   <button (click)="handleMixinFormStatus()">mixin</button>
 </div>
+
+<router-outlet></router-outlet>

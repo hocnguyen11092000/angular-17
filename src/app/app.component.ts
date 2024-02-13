@@ -1,5 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, effect, inject } from '@angular/core';
+import { CommonModule, PlatformLocation } from '@angular/common';
+import {
+  Component,
+  EnvironmentInjector,
+  Injector,
+  OnInit,
+  computed,
+  effect,
+  inject,
+} from '@angular/core';
 import {
   FormArray,
   FormControl,
@@ -8,11 +16,19 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router,
+  RouterModule,
+  TitleStrategy,
+} from '@angular/router';
 import { CartService } from '../components/cart/cart.service';
 import { FormAction } from '../enums/form.enum';
 import { FormHelper } from '../helpers/form.helper';
-import { map } from 'rxjs';
+import { TemplatePageTitleStrategy } from '../services/title.service';
+import { Title } from '@angular/platform-browser';
+import { InjectableFc } from '../utils/inject-fc.util';
+import { TestService } from '../services/test.service';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +36,7 @@ import { map } from 'rxjs';
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  providers: [TestService],
 })
 export class AppComponent implements OnInit {
   title = 'toggle-validators';
@@ -44,6 +61,10 @@ export class AppComponent implements OnInit {
   //#region inject services
   private readonly activateRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly titleService = inject(TemplatePageTitleStrategy);
+  private readonly injector = inject(Injector);
+  private readonly enviInjector = inject(EnvironmentInjector);
+  readonly testService = inject(TestService);
 
   readonly cartService = inject(CartService);
   readonly someForm = inject(NonNullableFormBuilder).group({
@@ -70,7 +91,9 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // this.activateRoute.queryParams.subscribe(console.log);
+    console.log(InjectableFc(this.injector, this.enviInjector));
+    this.testService.setName('app');
+
     // this.router.navigate(['.'], {
     //   queryParams: { test: 'âfafaf' },
     //   relativeTo: this.activateRoute,
@@ -156,6 +179,7 @@ export class AppComponent implements OnInit {
     this.router.navigate(['.'], {
       queryParams: { test: Math.random() },
       relativeTo: this.activateRoute,
+      // replaceUrl: true,
     });
   }
   //#endregion form handling
