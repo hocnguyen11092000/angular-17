@@ -18,6 +18,7 @@ import {
 } from '@angular/forms';
 import {
   ActivatedRoute,
+  NavigationEnd,
   Router,
   RouterModule,
   TitleStrategy,
@@ -29,6 +30,8 @@ import { TemplatePageTitleStrategy } from '../services/title.service';
 import { Title } from '@angular/platform-browser';
 import { InjectableFc } from '../utils/inject-fc.util';
 import { TestService } from '../services/test.service';
+import { debounceTime, filter } from 'rxjs';
+import { UrlService } from '../services/url.service';
 
 @Component({
   selector: 'app-root',
@@ -57,6 +60,8 @@ export class AppComponent implements OnInit {
       },
     ],
   };
+  previousUrl: string = '';
+  currentUrl: string = '';
 
   //#region inject services
   private readonly activateRoute = inject(ActivatedRoute);
@@ -65,6 +70,7 @@ export class AppComponent implements OnInit {
   private readonly injector = inject(Injector);
   private readonly enviInjector = inject(EnvironmentInjector);
   readonly testService = inject(TestService);
+  private readonly urlService = inject(UrlService);
 
   readonly cartService = inject(CartService);
   readonly someForm = inject(NonNullableFormBuilder).group({
@@ -91,15 +97,21 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    console.log(InjectableFc(this.injector, this.enviInjector));
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.urlService.setPreviousUrl(this.urlService.current);
+        this.urlService.setCurrentUrl(event.url);
+
+        console.log(this.urlService.pre, this.urlService.current);
+      });
+
     this.testService.setName('app');
 
     // this.router.navigate(['.'], {
     //   queryParams: { test: 'âfafaf' },
     //   relativeTo: this.activateRoute,
     // });
-
-    console.log(this.someForm);
   }
 
   //#region getter, setter

@@ -37,6 +37,7 @@ export const routes: Routes = [
       (await import('../components/defer/defer.component')).DeferComponent,
     title: 'defer detail',
   },
+
   {
     path: '',
     children: [
@@ -48,6 +49,11 @@ export const routes: Routes = [
         title: 'files',
       },
     ],
+  },
+  {
+    path: '',
+    redirectTo: 'form-array',
+    pathMatch: 'full',
   },
   {
     path: 'claim',
@@ -85,11 +91,7 @@ export const routes: Routes = [
       },
     ],
   },
-  {
-    path: '',
-    redirectTo: 'form-array',
-    pathMatch: 'prefix',
-  },
+
   {
     path: '**',
     redirectTo: 'defer',

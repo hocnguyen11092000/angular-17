@@ -10,6 +10,7 @@ import {
   NonNullableFormBuilder,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import _, { random } from 'lodash';
 
 @Component({
@@ -37,7 +38,14 @@ export class FormArrayComponent implements OnInit {
     array: new FormArray([]),
   });
 
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+
   ngOnInit(): void {
+    this.router.navigate(['.'], {
+      relativeTo: this.activatedRoute,
+      queryParams: { test: '1231' },
+    });
     _.forEach(_.times(10, _.constant(0)), () => {
       this.addFormArray();
     });
