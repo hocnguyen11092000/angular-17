@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import {
   FormArray,
+  FormBuilder,
   FormControl,
   FormGroup,
   NonNullableFormBuilder,
@@ -32,11 +33,19 @@ import { InjectableFc } from '../utils/inject-fc.util';
 import { TestService } from '../services/test.service';
 import { debounceTime, filter } from 'rxjs';
 import { UrlService } from '../services/url.service';
+import { FormControlComponent } from '../components/form-control/form-control.component';
+import { AppInputDirective } from '../directives/app-input.directive';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FormControlComponent,
+    AppInputDirective,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   providers: [TestService],
@@ -87,6 +96,10 @@ export class AppComponent implements OnInit {
     ]),
   });
   //#endregion inject services
+  readonly testFormControl = inject(FormBuilder).group({
+    name: ['', [Validators.required, Validators.minLength(5)]],
+    email: ['', [Validators.required]],
+  });
 
   quantityEffect = effect(() => {
     console.log(`change from cart ${this.cartService.quantity$$()}`);

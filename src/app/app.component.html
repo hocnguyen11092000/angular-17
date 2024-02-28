@@ -9,6 +9,16 @@
   </ul>
 </nav>
 <button (click)="handleNavigate()">navigate</button>
+<form [formGroup]="testFormControl">
+  <app-form-control
+    [errorsMessage]="{ required: 'Vui lòng nhập thông tin họ tên' }"
+  >
+    <input type="text" placeholder="name" formControlName="name" #control />
+  </app-form-control>
+  <app-form-control>
+    <input type="text" placeholder="email" formControlName="email" #control />
+  </app-form-control>
+</form>
 
 <div>pristine: {{ someForm.pristine | json }}</div>
 <div>invalid: {{ someForm.invalid | json }}</div>
