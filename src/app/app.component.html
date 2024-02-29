@@ -11,11 +11,16 @@
 <button (click)="handleNavigate()">navigate</button>
 <form [formGroup]="testFormControl">
   <app-form-control
-    [errorsMessage]="{ required: 'Vui lòng nhập thông tin họ tên' }"
+    [errorsMessage]="{ required: 'INPUT.ERRORS.REQUIRED_NAME' }"
   >
     <input type="text" placeholder="name" formControlName="name" #control />
   </app-form-control>
-  <app-form-control>
+  <app-form-control
+    [showErrorOnBlur]="false"
+    [errorsMessage]="{
+      score: 'INPUT.ERRORS.SCORE'
+    }"
+  >
     <input type="text" placeholder="email" formControlName="email" #control />
   </app-form-control>
 </form>

@@ -35,6 +35,8 @@ import { debounceTime, filter } from 'rxjs';
 import { UrlService } from '../services/url.service';
 import { FormControlComponent } from '../components/form-control/form-control.component';
 import { AppInputDirective } from '../directives/app-input.directive';
+import { I18nService } from '../services/i18n.service';
+import { scoreValidator } from '../validators/common.validator';
 
 @Component({
   selector: 'app-root',
@@ -80,6 +82,7 @@ export class AppComponent implements OnInit {
   private readonly enviInjector = inject(EnvironmentInjector);
   readonly testService = inject(TestService);
   private readonly urlService = inject(UrlService);
+  private readonly i18nService = inject(I18nService);
 
   readonly cartService = inject(CartService);
   readonly someForm = inject(NonNullableFormBuilder).group({
@@ -98,7 +101,7 @@ export class AppComponent implements OnInit {
   //#endregion inject services
   readonly testFormControl = inject(FormBuilder).group({
     name: ['', [Validators.required, Validators.minLength(5)]],
-    email: ['', [Validators.required]],
+    email: ['', [Validators.required, scoreValidator]],
   });
 
   quantityEffect = effect(() => {
@@ -110,6 +113,8 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.i18nService.hanleBootstrapTranslation();
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {

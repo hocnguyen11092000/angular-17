@@ -1,0 +1,10 @@
+{
+  "INPUT": {
+    "ERRORS": {
+      "REQUIRED": "This field is required",
+      "REQUIRED_NAME": "please enter your name",
+      "MINLENGTH": "please enter at least {{requiredLength}} character",
+      "SCORE": "please enter value from {{from}} - {{to}}"
+    }
+  }
+}

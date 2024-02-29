@@ -6,6 +6,7 @@ import {
   ContentChild,
   ElementRef,
   Input,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import {
@@ -13,8 +14,18 @@ import {
   FormControlStatus,
   NgControl,
 } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import _ from 'lodash';
-import { BehaviorSubject, fromEvent, map, tap, withLatestFrom } from 'rxjs';
+import {
+  BehaviorSubject,
+  filter,
+  fromEvent,
+  tap,
+  takeWhile,
+  finalize,
+  Subject,
+  takeUntil,
+} from 'rxjs';
 
 @Component({
   selector: 'app-form-control',
@@ -23,9 +34,9 @@ import { BehaviorSubject, fromEvent, map, tap, withLatestFrom } from 'rxjs';
     <div class="form-content">
       <ng-content></ng-content>
 
-      @if((showError$ | async)) {
+      @if(showError$ | async) {
       <ng-container *ngIf="errors$ | async as error">
-        <div class="feed-back">{{ error }}</div>
+        <div class="feed-back">{{ error | translate : errorsParams }}</div>
       </ng-container>
       }
     </div>
@@ -35,14 +46,17 @@ import { BehaviorSubject, fromEvent, map, tap, withLatestFrom } from 'rxjs';
       .feed-back {
         color: #ff4d4f;
         margin: 4px 0;
+        font-size: 12px;
       }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AsyncPipe, NgIf],
+  imports: [AsyncPipe, NgIf, TranslateModule],
 })
-export class FormControlComponent implements OnInit, AfterContentInit {
+export class FormControlComponent
+  implements OnInit, AfterContentInit, OnDestroy
+{
   //#region contentChild, contentChildren
   @ContentChild(NgControl, { static: false }) control?: FormControlDirective;
   @ContentChild('control', { static: false }) ref?: ElementRef;
@@ -50,17 +64,22 @@ export class FormControlComponent implements OnInit, AfterContentInit {
 
   //#region inputs, outputs
   @Input() errorsMessage: Record<string, string> = {};
+  @Input({ required: false }) showErrorOnBlur = true;
   //#endregion inputs, outputs
 
   //#region variables
   errorTemplate: Record<string, string> = {
-    required: 'This field is required',
+    required: 'INPUT.ERRORS.REQUIRED',
+    minlength: 'INPUT.ERRORS.MINLENGTH',
   };
+
+  errorsParams: Record<string, string> = {};
   //#endregion variables
 
   //#region subjects
   showError$ = new BehaviorSubject(false);
   errors$ = new BehaviorSubject<string>('');
+  destroy$ = new Subject<void>();
   //#endregion subjects
 
   //#region services
@@ -77,39 +96,65 @@ export class FormControlComponent implements OnInit, AfterContentInit {
   ngAfterContentInit(): void {
     fromEvent(this.ref!.nativeElement, 'blur')
       .pipe(
+        takeWhile(() => this.showErrorOnBlur),
+        filter(() => !this.control?.valid),
         tap((_) => {
-          this.showError$.next(true);
-
           this.handleCheckControlValid();
+        }),
+        takeUntil(this.destroy$),
+        finalize(() => {
+          console.log('finalize');
         })
       )
       .subscribe();
 
     this.control?.valueChanges
       ?.pipe(
+        filter(() => !this.control?.valid),
         tap((_) => {
-          this.handleCheckControlValid();
-        })
+          if (this.control?.dirty) {
+            this.handleCheckControlValid();
+          }
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe();
+
+    this.control?.statusChanges
+      ?.pipe(
+        tap((status: FormControlStatus) => {
+          if (status === 'VALID') {
+            this.showError$.next(false);
+            this.errors$.next('');
+          }
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   //#endregion life circles
 
   handleCheckControlValid() {
-    if (this.control && this.control.invalid) {
-      this.showError$.next(true);
-
-      console.log(this.control.errors);
-
-      this.errors$.next(this.handleGetErrorMessage(this.control.errors!));
-    } else {
-      this.showError$.next(false);
-      this.errors$.next('');
-    }
+    this.showError$.next(true);
+    this.errors$.next(this.handleGetErrorMessage(this.control?.errors!));
   }
 
   handleGetErrorMessage(errors: Record<string, string>): string {
     const errorKey = _.head(_.keys(errors));
+    const params = _.get(errors, errorKey!);
+
+    if (
+      typeof params === 'object' &&
+      _.isPlainObject(params) &&
+      _.size(params)
+    ) {
+      this.errorsParams = params;
+    }
 
     return _.get(this.errorTemplate, errorKey!);
   }
