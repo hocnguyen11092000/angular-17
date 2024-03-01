@@ -31,15 +31,24 @@ import {
   selector: 'app-form-control',
   template: `
     <h3>form control</h3>
-    <div class="form-content">
-      <ng-content></ng-content>
+    <ng-container
+      *ngIf="{
+        showError: showError$ | async,
+        errors: errors$ | async
+      } as templateState"
+    >
+      <div class="form-content">
+        <div [class.error-wrap]="templateState.showError">
+          <ng-content></ng-content>
+        </div>
 
-      @if(showError$ | async) {
-      <ng-container *ngIf="errors$ | async as error">
-        <div class="feed-back">{{ error | translate : errorsParams }}</div>
-      </ng-container>
-      }
-    </div>
+        @if(templateState.showError && templateState.errors) {
+        <div class="feed-back">
+          {{ templateState.errors | translate : errorsParams }}
+        </div>
+        }
+      </div>
+    </ng-container>
   `,
   styles: [
     `
@@ -47,6 +56,18 @@ import {
         color: #ff4d4f;
         margin: 4px 0;
         font-size: 12px;
+      }
+
+      :host {
+        ::ng-deep {
+          .error-wrap input {
+            border-color: #ff4d4f;
+          }
+
+          .error-wrap input::placeholder {
+            color: #ff4d4f;
+          }
+        }
       }
     `,
   ],
@@ -65,6 +86,7 @@ export class FormControlComponent
   //#region inputs, outputs
   @Input() errorsMessage: Record<string, string> = {};
   @Input({ required: false }) showErrorOnBlur = true;
+  @Input({ required: false }) priority: Array<string> | null = null;
   //#endregion inputs, outputs
 
   //#region variables
@@ -145,7 +167,15 @@ export class FormControlComponent
   }
 
   handleGetErrorMessage(errors: Record<string, string>): string {
-    const errorKey = _.head(_.keys(errors));
+    let keyPicked = undefined;
+
+    if (_.size(this.priority)) {
+      keyPicked = _.find(this.priority, (key: string) => {
+        return _.keys(errors).includes(key);
+      });
+    }
+
+    const errorKey = keyPicked ?? _.head(_.keys(errors));
     const params = _.get(errors, errorKey!);
 
     if (

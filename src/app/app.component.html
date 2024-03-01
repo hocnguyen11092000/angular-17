@@ -1,5 +1,17 @@
 <h2>hello world</h2>
 <h2>{{ testService.name }}</h2>
+<mat-form-field>
+  <mat-label>Chọn ngôn ngữ</mat-label>
+  <mat-select
+    [(ngModel)]="currentLang"
+    (ngModelChange)="handleChangeLang($event)"
+  >
+    @for (lang of langs; track $index) {
+    <mat-option [value]="lang">{{ lang }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+
 <nav>
   <ul>
     <li routerLink="form-array" routerLinkActive="active">Form array</li>
@@ -9,9 +21,13 @@
   </ul>
 </nav>
 <button (click)="handleNavigate()">navigate</button>
-<form [formGroup]="testFormControl">
+<form [formGroup]="testFormControl" autocomplete="off">
   <app-form-control
-    [errorsMessage]="{ required: 'INPUT.ERRORS.REQUIRED_NAME' }"
+    [errorsMessage]="{
+      required: 'INPUT.ERRORS.REQUIRED_NAME',
+      score: 'INPUT.ERRORS.SCORE'
+    }"
+    [priority]="['minlength', 'score']"
   >
     <input type="text" placeholder="name" formControlName="name" #control />
   </app-form-control>

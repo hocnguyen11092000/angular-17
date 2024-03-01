@@ -13,10 +13,13 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormsModule,
   NonNullableFormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -37,6 +40,7 @@ import { FormControlComponent } from '../components/form-control/form-control.co
 import { AppInputDirective } from '../directives/app-input.directive';
 import { I18nService } from '../services/i18n.service';
 import { scoreValidator } from '../validators/common.validator';
+import { TranslateService, TranslateStore } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-root',
@@ -47,6 +51,9 @@ import { scoreValidator } from '../validators/common.validator';
     RouterModule,
     FormControlComponent,
     AppInputDirective,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -54,6 +61,8 @@ import { scoreValidator } from '../validators/common.validator';
 })
 export class AppComponent implements OnInit {
   title = 'toggle-validators';
+  currentLang = 'vi';
+  langs: Array<string> = [];
   config = {
     name: {
       validators: [Validators.required],
@@ -83,6 +92,7 @@ export class AppComponent implements OnInit {
   readonly testService = inject(TestService);
   private readonly urlService = inject(UrlService);
   private readonly i18nService = inject(I18nService);
+  private readonly translateService = inject(TranslateService);
 
   readonly cartService = inject(CartService);
   readonly someForm = inject(NonNullableFormBuilder).group({
@@ -100,7 +110,7 @@ export class AppComponent implements OnInit {
   });
   //#endregion inject services
   readonly testFormControl = inject(FormBuilder).group({
-    name: ['', [Validators.required, Validators.minLength(5)]],
+    name: ['', [Validators.required, Validators.minLength(5), scoreValidator]],
     email: ['', [Validators.required, scoreValidator]],
   });
 
@@ -113,6 +123,7 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.langs = this.translateService.langs;
     this.i18nService.hanleBootstrapTranslation();
 
     this.router.events
@@ -213,4 +224,10 @@ export class AppComponent implements OnInit {
     });
   }
   //#endregion form handling
+
+  //#region handle lang changes
+  handleChangeLang(lang: string): void {
+    this.translateService.use(lang);
+  }
+  //#endregion handle lang changes
 }
