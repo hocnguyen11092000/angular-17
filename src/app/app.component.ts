@@ -1,4 +1,4 @@
-import { CommonModule, PlatformLocation } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   Component,
   EnvironmentInjector,
@@ -18,29 +18,25 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import {
   ActivatedRoute,
   NavigationEnd,
   Router,
   RouterModule,
-  TitleStrategy,
 } from '@angular/router';
+import { filter } from 'rxjs';
 import { CartService } from '../components/cart/cart.service';
-import { FormAction } from '../enums/form.enum';
-import { FormHelper } from '../helpers/form.helper';
-import { TemplatePageTitleStrategy } from '../services/title.service';
-import { Title } from '@angular/platform-browser';
-import { InjectableFc } from '../utils/inject-fc.util';
-import { TestService } from '../services/test.service';
-import { debounceTime, filter } from 'rxjs';
-import { UrlService } from '../services/url.service';
 import { FormControlComponent } from '../components/form-control/form-control.component';
 import { AppInputDirective } from '../directives/app-input.directive';
+import { FormAction } from '../enums/form.enum';
+import { FormHelper } from '../helpers/form.helper';
 import { I18nService } from '../services/i18n.service';
+import { TestService } from '../services/test.service';
+import { TemplatePageTitleStrategy } from '../services/title.service';
+import { UrlService } from '../services/url.service';
 import { scoreValidator } from '../validators/common.validator';
-import { TranslateService, TranslateStore } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-root',
@@ -92,7 +88,6 @@ export class AppComponent implements OnInit {
   readonly testService = inject(TestService);
   private readonly urlService = inject(UrlService);
   private readonly i18nService = inject(I18nService);
-  private readonly translateService = inject(TranslateService);
 
   readonly cartService = inject(CartService);
   readonly someForm = inject(NonNullableFormBuilder).group({
@@ -123,7 +118,7 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.langs = this.translateService.langs;
+    this.langs = this.i18nService.langs;
     this.i18nService.hanleBootstrapTranslation();
 
     this.router.events
@@ -227,7 +222,7 @@ export class AppComponent implements OnInit {
 
   //#region handle lang changes
   handleChangeLang(lang: string): void {
-    this.translateService.use(lang);
+    this.i18nService.use(lang);
   }
   //#endregion handle lang changes
 }
