@@ -10,6 +10,11 @@
     }
   </mat-select>
 </mat-form-field>
+<input
+  placeholder="input..."
+  type="text"
+  (input)="hanleInputValue($any($event).target.value)"
+/>
 
 <nav>
   <ul>

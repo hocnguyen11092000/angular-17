@@ -225,4 +225,10 @@ export class AppComponent implements OnInit {
     this.i18nService.use(lang);
   }
   //#endregion handle lang changes
+
+  //#region $any
+  hanleInputValue(value: string) {
+    console.log(value);
+  }
+  //#endregion $any
 }
