@@ -6,5 +6,6 @@
       "MINLENGTH": "Vui lòng nhập ít nhất {{requiredLength}} kí tự",
       "SCORE": "Vui lòng nhập giá trị trong khoảng {{from}} - {{to}}"
     }
-  }
+  },
+  "TEST": "test vi"
 }

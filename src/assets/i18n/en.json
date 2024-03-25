@@ -6,5 +6,6 @@
       "MINLENGTH": "please enter at least {{requiredLength}} character",
       "SCORE": "please enter value from {{from}} - {{to}}"
     }
-  }
+  },
+  "TEST": "test en"
 }
