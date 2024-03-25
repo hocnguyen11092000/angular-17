@@ -51,6 +51,12 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'post',
+    loadComponent: async () =>
+      (await import('../components/post/post.component')).PostComponent,
+    title: 'post',
+  },
+  {
     path: '',
     redirectTo: 'form-array',
     pathMatch: 'full',
