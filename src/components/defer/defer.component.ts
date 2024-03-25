@@ -21,6 +21,7 @@ import {
   startWith,
   map,
   defer,
+  filter,
 } from 'rxjs';
 import _ from 'lodash';
 
@@ -90,10 +91,7 @@ export class DeferComponent implements OnInit {
         switchMap((currentLang) =>
           defer(() =>
             this.http.get(`assets/i18n/custom-${currentLang}.json`).pipe(
-              tap((res) => {
-                this.i18Service.setTranslation(currentLang, res, true);
-              }),
-              takeWhile((res) => {
+              filter((res) => {
                 const translateJson = _.get(
                   this.i18Service.store,
                   `translations.${this.i18Service.currentLang}`
@@ -113,8 +111,9 @@ export class DeferComponent implements OnInit {
 
                 return true;
               }),
-              finalize(() => {
-                console.log('this stream is completed');
+              tap((res) => {
+                console.log('run');
+                this.i18Service.setTranslation(currentLang, res, true);
               })
             )
           )
