@@ -9,9 +9,20 @@ import { CommonModule } from '@angular/common';
 import { CartComponent } from '../cart/cart.component';
 import { TestService } from '../../services/test.service';
 import { I18nService } from '../../services/i18n.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { LangChangeEvent, TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
-import { takeWhile, tap, withLatestFrom } from 'rxjs';
+import {
+  finalize,
+  switchMap,
+  takeWhile,
+  tap,
+  withLatestFrom,
+  of,
+  startWith,
+  map,
+  defer,
+} from 'rxjs';
+import _ from 'lodash';
 
 @Component({
   selector: 'app-defer',
@@ -39,20 +50,77 @@ export class DeferComponent implements OnInit {
   private readonly i18Service = inject(I18nService);
 
   constructor(private http: HttpClient) {
-    this.http
-      .get('assets/i18n/custom.json')
-      .pipe(
-        tap((res) => {
-          this.i18Service.setTranslation('vi', res, true);
-        }),
-        withLatestFrom(this.i18Service.getTranslation('vi'))
-      )
-      .subscribe((res) => {
-        console.log(res, this.i18Service.store);
-      });
+    // const currentLang = this.i18Service.currentLang || 'vi';
+    // this.http
+    //   .get(`assets/i18n/custom-${currentLang}.json`)
+    //   .pipe(
+    //     tap((res) => {
+    //       this.i18Service.setTranslation(currentLang, res, true);
+    //     }),
+    //     takeWhile((res) => {
+    //       const translateJson = _.get(
+    //         this.i18Service.store,
+    //         `translations.${this.i18Service.currentLang}`
+    //       );
+    //       if (translateJson) {
+    //         const keysResponse = _.keys(res) || [];
+    //         if (
+    //           _.size(_.intersection(_.keys(translateJson), keysResponse)) > 0
+    //         ) {
+    //           return false;
+    //         }
+    //       }
+    //       return true;
+    //     }),
+    //     finalize(() => {
+    //       console.log('this stream is completed');
+    //     }),
+    //     withLatestFrom(this.i18Service.getTranslation('vi'))
+    //   )
+    //   .subscribe((res) => {
+    //     console.log(res, this.i18Service.store);
+    //   });
   }
 
   ngOnInit(): void {
+    this.i18Service.onLangChange
+      .pipe(
+        map((langEvent: LangChangeEvent) => langEvent.lang),
+        startWith(this.i18Service.currentLang),
+        switchMap((currentLang) =>
+          defer(() =>
+            this.http.get(`assets/i18n/custom-${currentLang}.json`).pipe(
+              tap((res) => {
+                this.i18Service.setTranslation(currentLang, res, true);
+              }),
+              takeWhile((res) => {
+                const translateJson = _.get(
+                  this.i18Service.store,
+                  `translations.${this.i18Service.currentLang}`
+                );
+
+                if (translateJson) {
+                  const keysResponse = _.keys(res) || [];
+
+                  if (
+                    _.size(
+                      _.intersection(_.keys(translateJson), keysResponse)
+                    ) > 0
+                  ) {
+                    return false;
+                  }
+                }
+
+                return true;
+              }),
+              finalize(() => {
+                console.log('this stream is completed');
+              })
+            )
+          )
+        )
+      )
+      .subscribe();
     // this.testService.setName('defer');
   }
 }
