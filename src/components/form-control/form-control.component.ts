@@ -78,6 +78,9 @@ import {
 export class FormControlComponent
   implements OnInit, AfterContentInit, OnDestroy
 {
+  constructor() {
+    console.log(this.errorsMessage, this.priority);
+  }
   //#region contentChild, contentChildren
   @ContentChild(NgControl, { static: false }) control?: FormControlDirective;
   @ContentChild('control', { static: false }) ref?: ElementRef;
@@ -109,6 +112,7 @@ export class FormControlComponent
 
   //#region life circles
   ngOnInit(): void {
+    console.log(this.errorsMessage, this.priority);
     this.errorTemplate = {
       ...this.errorTemplate,
       ...this.errorsMessage,

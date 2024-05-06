@@ -32,6 +32,12 @@ export const routes: Routes = [
     title: 'defer',
   },
   {
+    path: 'post',
+    loadComponent: async () =>
+      (await import('../components/posts/post.component')).PostComponent,
+    title: 'post',
+  },
+  {
     path: 'defer/:id',
     loadComponent: async () =>
       (await import('../components/defer/defer.component')).DeferComponent,
