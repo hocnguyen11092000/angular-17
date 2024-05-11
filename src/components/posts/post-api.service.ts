@@ -11,11 +11,19 @@ export class PostApiService {
   private readonly baseUrl = 'https://jsonplaceholder.typicode.com';
   private readonly http = inject(HttpClient);
 
-  getAllPosts(path = '/posts', queryParams: any): Observable<Array<IPost>> {
-    console.log(this.baseUrl + path);
+  getAllPosts(queryParams: any): Observable<Array<IPost>> {
+    const path = '/posts';
 
     return this.http.get<Array<IPost>>(this.baseUrl + path, {
       params: queryParams,
     });
+  }
+
+  getDetailPost(queryParams: any): Observable<IPost> {
+    const { id } = queryParams;
+
+    const path = '/posts/' + id;
+
+    return this.http.get<IPost>(this.baseUrl + path);
   }
 }

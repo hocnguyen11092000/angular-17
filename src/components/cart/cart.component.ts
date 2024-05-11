@@ -83,7 +83,7 @@ export class CartComponent implements OnInit {
   //#endregion signals
 
   ngOnInit(): void {
-    this.activateRoute.queryParams.subscribe(console.log);
+    // this.activateRoute.queryParams.subscribe(console.log);
     this.router.navigate(['.'], {
       queryParams: { test: 'âfafaf' },
       relativeTo: this.activateRoute,

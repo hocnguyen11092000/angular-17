@@ -38,6 +38,19 @@ export const routes: Routes = [
     title: 'post',
   },
   {
+    path: 'cache',
+    loadComponent: async () =>
+      (await import('../components/cache/cache.component')).CacheComponent,
+    title: 'cache',
+  },
+  {
+    path: 'cache/:id',
+    loadComponent: async () =>
+      (await import('../components/cache/cache-detail.component'))
+        .CachedDetailComponent,
+    title: 'cache detail',
+  },
+  {
     path: 'defer/:id',
     loadComponent: async () =>
       (await import('../components/defer/defer.component')).DeferComponent,

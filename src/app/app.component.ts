@@ -127,7 +127,7 @@ export class AppComponent implements OnInit {
         this.urlService.setPreviousUrl(this.urlService.current);
         this.urlService.setCurrentUrl(event.url);
 
-        console.log(this.urlService.pre, this.urlService.current);
+        // console.log(this.urlService.pre, this.urlService.current);
       });
 
     this.testService.setName('app');
