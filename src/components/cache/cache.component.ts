@@ -1,17 +1,16 @@
+import { AsyncPipe, JsonPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   OnInit,
 } from '@angular/core';
-import { PostApiService } from '../posts/post-api.service';
-import { PostModel } from '../../models';
-import { delay, shareReplay } from 'rxjs';
-import { AsyncPipe, JsonPipe } from '@angular/common';
-import { CachedService } from '../../services/cache.service';
-import { IPost } from '../posts/post.interface';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { PostModel } from '../../models';
+import { CachedService } from '../../services/cache.service';
+import { PostApiService } from '../posts/post-api.service';
+import { IPost } from '../posts/post.interface';
 
 @Component({
   selector: 'app-cache',
