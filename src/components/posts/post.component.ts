@@ -29,5 +29,5 @@ export class PostComponent extends BaseListComponent<PostModel, IPost> {
 
   override model: PostModel = this.defaultModel;
   override getList$ = this.postApiService.getAllPosts.bind(this.postApiService);
-  override debouceTime: number = 2000;
+  override debounceTime: number = 2000;
 }

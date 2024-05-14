@@ -28,7 +28,7 @@ export class BaseListComponent<T extends object, L extends object>
   model!: T;
   getList$!: (path: string | undefined, queryParams: T) => Observable<Array<L>>;
   data!: Array<L>;
-  debouceTime: number = 300;
+  debounceTime: number = 300;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -58,7 +58,7 @@ export class BaseListComponent<T extends object, L extends object>
             queryParams: queryParams,
           });
         }),
-        debounceTime(this.debouceTime),
+        debounceTime(this.debounceTime),
         switchMap((queryParams: T | null) => {
           return this.getList$(undefined, queryParams!);
         })

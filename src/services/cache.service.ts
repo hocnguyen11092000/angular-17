@@ -53,7 +53,7 @@ export class CachedService {
         tap((queryParams) => {
           this.withCached({
             ...this.initConfig,
-            queryParams: queryParams as any,
+            queryParams: queryParams as Params,
           });
         })
       )
@@ -96,6 +96,8 @@ export class CachedService {
               [this.hashKey([...queryKey, queryParams])]: data,
             });
 
+            console.log(this.cached.value);
+
             this.data$.next(data);
           }
         }),
@@ -133,6 +135,9 @@ export class CachedService {
           } else {
             this.loading$.next(true);
           }
+        }),
+        finalize(() => {
+          console.log('finalize');
         })
       )
       .subscribe();

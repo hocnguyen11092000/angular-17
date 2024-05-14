@@ -11,35 +11,37 @@ import { PostModel } from '../../models';
 import { CachedService } from '../../services/cache.service';
 import { PostApiService } from '../posts/post-api.service';
 import { IPost } from '../posts/post.interface';
+import { LoadingWrapComponent } from '../loading-wrap/loading-wrap.component';
 
 @Component({
   selector: 'app-cache',
   template: `
     <h3>cache component</h3>
-    @if(cachedData.loading$ | async) {
-    <p>loading...</p>
-    } @if(cachedData.fetching$ | async) {
-    <p>fetching...</p>
-    } @if(cachedData.data$ | async; as data) { @for (item of data; track
-    $index){
-    <p style="cursor: pointer;" [routerLink]="['/cache', item.id]">
-      {{ item.title }}
-    </p>
-    } }
-    <div>
-      <button (click)="count = count + 1">{{ count }}</button>
-      <button (click)="handleChangeStart()">change size</button>
-      <button (click)="handleSearch()">search</button>
-      <input
-        type="text"
-        placeholder="search..."
-        [(ngModel)]="model.title_like"
-      />
-    </div>
+    <app-loading-wrap
+      [loading]="(cachedData.loading$ | async)!"
+      [fetching]="(cachedData.fetching$ | async)!"
+    >
+      @if(cachedData.data$ | async; as data) { @for (item of data; track
+      $index){
+      <p style="cursor: pointer;" [routerLink]="['/cache', item.id]">
+        {{ item.title }}
+      </p>
+      } }
+      <div>
+        <button (click)="count = count + 1">{{ count }}</button>
+        <button (click)="handleChangeStart()">change size</button>
+        <button (click)="handleSearch()">search</button>
+        <input
+          type="text"
+          placeholder="search..."
+          [(ngModel)]="model.title_like"
+        />
+      </div>
+    </app-loading-wrap>
   `,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AsyncPipe, RouterLink, JsonPipe, FormsModule],
+  imports: [AsyncPipe, RouterLink, JsonPipe, FormsModule, LoadingWrapComponent],
 })
 export class CacheComponent implements OnInit {
   private readonly postApiService = inject(PostApiService);
