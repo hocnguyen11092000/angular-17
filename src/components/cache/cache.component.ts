@@ -12,16 +12,18 @@ import { CachedService } from '../../services/cache.service';
 import { PostApiService } from '../posts/post-api.service';
 import { IPost } from '../posts/post.interface';
 import { LoadingWrapComponent } from '../loading-wrap/loading-wrap.component';
+import { PhotoApiService } from '../../services/photo-api-service';
+import { IPhoto } from '../../interfaces';
 
 @Component({
   selector: 'app-cache',
   template: `
     <h3>cache component</h3>
     <app-loading-wrap
-      [loading]="(cachedData.loading$ | async)!"
-      [fetching]="(cachedData.fetching$ | async)!"
+      [loading]="(cachedPost.loading$ | async)!"
+      [fetching]="(cachedPost.fetching$ | async)!"
     >
-      @if(cachedData.data$ | async; as data) { @for (item of data; track
+      @if(cachedPost.data$ | async; as data) { @for (item of data; track
       $index){
       <p style="cursor: pointer;" [routerLink]="['/cache', item.id]">
         {{ item.title }}
@@ -38,6 +40,18 @@ import { LoadingWrapComponent } from '../loading-wrap/loading-wrap.component';
         />
       </div>
     </app-loading-wrap>
+
+    @if(cachedPhoto.loading$ | async) {
+    <div>photo loading...</div>
+    } @if(cachedPhoto.fetching$ | async) {
+    <div>photo fetching...</div>
+    } @if(cachedPhoto.data$ | async; as data) { @for (item of data; track
+    $index){
+    <p style="cursor: pointer;" [routerLink]="['/cache', item.id]">
+      {{ item.title }}
+    </p>
+    <img [src]="item.url" alt="" />
+    } }
   `,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,11 +60,18 @@ import { LoadingWrapComponent } from '../loading-wrap/loading-wrap.component';
 export class CacheComponent implements OnInit {
   private readonly postApiService = inject(PostApiService);
   private readonly cachedService = inject(CachedService);
+  private readonly photoApiService = inject(PhotoApiService);
 
   model = new PostModel(null);
-  cachedData = this.cachedService.withCached<Array<IPost>, PostModel>({
+  cachedPost = this.cachedService.withCached<Array<IPost>, PostModel>({
     queryKey: ['post'],
     queryFc: this.postApiService.getAllPosts.bind(this.postApiService),
+    queryParams: this.model,
+  });
+
+  cachedPhoto = this.cachedService.withCached<Array<IPhoto>, PostModel>({
+    queryKey: ['photo'],
+    queryFc: this.photoApiService.getAllPhotos.bind(this.photoApiService),
     queryParams: this.model,
     options: {
       syncUrl: true,
@@ -61,13 +82,9 @@ export class CacheComponent implements OnInit {
 
   handleChangeStart() {
     this.model._start = this.model._start + 5;
-
-    this.cachedData.changeModel(this.model);
   }
 
-  handleSearch() {
-    this.cachedData.changeModel(this.model);
-  }
+  handleSearch() {}
 
   ngOnInit(): void {}
 }

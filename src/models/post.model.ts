@@ -8,7 +8,7 @@ export class PostModel {
 
   constructor(query: IPostQueryParams | null) {
     if (!_.isEmpty(query)) {
-      this._start = query._start;
+      this._start = query._start < 0 ? 0 : query._start;
       this._limit = query._limit;
       this.title_like = query.title_like;
     }

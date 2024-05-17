@@ -2,13 +2,15 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import _ from 'lodash';
 import {
   BehaviorSubject,
   debounceTime,
+  filter,
   Observable,
   switchMap,
   take,
@@ -22,13 +24,20 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BaseListComponent<T extends object, L extends object>
-  implements OnInit
+  implements OnInit, OnDestroy
 {
+  //#region subjects
   triggerSearch$ = new BehaviorSubject<T | null>(null);
+  data$: BehaviorSubject<Array<L> | null> =
+    new BehaviorSubject<Array<L> | null>(null);
+  //#endregion subjects
+
+  //#region default variables
   model!: T;
-  getList$!: (path: string | undefined, queryParams: T) => Observable<Array<L>>;
-  data!: Array<L>;
+  getList!: (queryParams: T) => Observable<Array<L>>;
   debounceTime: number = 300;
+  defaultUrlQueryParams!: T;
+  //#endregion default variables
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -42,9 +51,8 @@ export class BaseListComponent<T extends object, L extends object>
         tap((query) => {
           if (!_.isEmpty(query)) {
             this.model = { ...query } as T;
+            this.triggerSearch$.next(this.model);
           }
-
-          this.triggerSearch$.next(this.model);
         }),
         take(1)
       )
@@ -60,18 +68,22 @@ export class BaseListComponent<T extends object, L extends object>
         }),
         debounceTime(this.debounceTime),
         switchMap((queryParams: T | null) => {
-          return this.getList$(undefined, queryParams!);
+          return this.getList(queryParams!);
         })
       )
       .subscribe((data) => {
-        this.data = data;
+        this.data$.next(data);
         this.cdr.markForCheck();
       });
+
+    this.ngOnChildrenInit();
+  }
+
+  ngOnDestroy(): void {
+    this.ngOnDestroy();
   }
 
   handleSearch(value: string) {
-    _.set(this.model, 'title_like', value);
-
     this.triggerSearch$.next(this.model);
   }
 
@@ -84,4 +96,10 @@ export class BaseListComponent<T extends object, L extends object>
 
     this.triggerSearch$.next(this.model);
   }
+
+  //#region life circle for children
+  ngOnChildrenInit() {}
+
+  ngOnChildrenDestroy() {}
+  //#endregion life circle for children
 }

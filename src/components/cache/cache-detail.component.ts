@@ -34,9 +34,5 @@ export class CachedDetailComponent {
     queryParams: {
       id: this.activatedRoute.snapshot.params['id'] + '',
     },
-    options: {
-      syncUrl: true,
-      url: `cache/${this.activatedRoute.snapshot.params['id']}`,
-    },
   });
 }

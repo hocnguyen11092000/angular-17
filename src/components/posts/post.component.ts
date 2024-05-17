@@ -4,6 +4,7 @@ import { PostModel } from '../../models';
 import { PostApiService } from './post-api.service';
 import { IPost } from './post.interface';
 import { FormsModule } from '@angular/forms';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-post',
@@ -13,13 +14,13 @@ import { FormsModule } from '@angular/forms';
     <button (click)="handleSearch(model.title_like)">search</button>
     <button (click)="handleRefresh()">refresh</button>
     <button (click)="handleReset(defaultModel)">reset</button>
-    @for(item of data; track $index) {
+    @for(item of data$ | async; track $index) {
     <div>{{ item.title }}</div>
     }
   `,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, AsyncPipe],
 })
 export class PostComponent extends BaseListComponent<PostModel, IPost> {
   private readonly postApiService = inject(PostApiService);
@@ -28,6 +29,11 @@ export class PostComponent extends BaseListComponent<PostModel, IPost> {
   }
 
   override model: PostModel = this.defaultModel;
-  override getList$ = this.postApiService.getAllPosts.bind(this.postApiService);
-  override debounceTime: number = 2000;
+  override getList = this.postApiService.getAllPosts.bind(this.postApiService);
+  override debounceTime: number = 0;
+
+  override ngOnChildrenInit(): void {
+    this.model = new PostModel(this.defaultUrlQueryParams);
+    this.handleRefresh();
+  }
 }
