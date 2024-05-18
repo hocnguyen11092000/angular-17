@@ -22,6 +22,7 @@ import { LoadingWrapComponent } from '../loading-wrap/loading-wrap.component';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe, NgIf, LoadingWrapComponent],
+  providers: [CachedService],
 })
 export class CachedDetailComponent {
   private readonly activatedRoute = inject(ActivatedRoute);

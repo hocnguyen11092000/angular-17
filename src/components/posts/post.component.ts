@@ -31,9 +31,10 @@ export class PostComponent extends BaseListComponent<PostModel, IPost> {
   override model: PostModel = this.defaultModel;
   override getList = this.postApiService.getAllPosts.bind(this.postApiService);
   override debounceTime: number = 0;
+  override isModelChange: boolean = true;
 
   override ngOnChildrenInit(): void {
-    this.model = new PostModel(this.defaultUrlQueryParams);
-    this.handleRefresh();
+    this.model = new PostModel(this.initQueryParams);
+    this.handleStartApi();
   }
 }

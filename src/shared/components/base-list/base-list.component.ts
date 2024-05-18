@@ -1,19 +1,21 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import _ from 'lodash';
 import {
   BehaviorSubject,
   debounceTime,
-  filter,
   Observable,
+  shareReplay,
+  skipUntil,
+  Subject,
   switchMap,
   take,
+  takeUntil,
   tap,
 } from 'rxjs';
 
@@ -27,7 +29,10 @@ export class BaseListComponent<T extends object, L extends object>
   implements OnInit, OnDestroy
 {
   //#region subjects
-  triggerSearch$ = new BehaviorSubject<T | null>(null);
+  private triggerSearch$ = new BehaviorSubject<T | null>(null);
+  private skip$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
   data$: BehaviorSubject<Array<L> | null> =
     new BehaviorSubject<Array<L> | null>(null);
   //#endregion subjects
@@ -36,12 +41,12 @@ export class BaseListComponent<T extends object, L extends object>
   model!: T;
   getList!: (queryParams: T) => Observable<Array<L>>;
   debounceTime: number = 300;
-  defaultUrlQueryParams!: T;
+  initQueryParams!: T;
+  isModelChange: boolean = false;
   //#endregion default variables
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef,
     private readonly router: Router
   ) {}
 
@@ -51,7 +56,7 @@ export class BaseListComponent<T extends object, L extends object>
         tap((query) => {
           if (!_.isEmpty(query)) {
             this.model = { ...query } as T;
-            this.triggerSearch$.next(this.model);
+            this.initQueryParams = this.model;
           }
         }),
         take(1)
@@ -60,6 +65,7 @@ export class BaseListComponent<T extends object, L extends object>
 
     this.triggerSearch$
       .pipe(
+        skipUntil(this.skip$),
         tap((queryParams) => {
           this.router.navigate(['.'], {
             relativeTo: this.activatedRoute,
@@ -69,21 +75,32 @@ export class BaseListComponent<T extends object, L extends object>
         debounceTime(this.debounceTime),
         switchMap((queryParams: T | null) => {
           return this.getList(queryParams!);
-        })
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((data) => {
         this.data$.next(data);
-        this.cdr.markForCheck();
       });
+
+    if (!this.isModelChange) {
+      this.handleStartApi();
+    }
 
     this.ngOnChildrenInit();
   }
 
   ngOnDestroy(): void {
-    this.ngOnDestroy();
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    this.ngOnChildrenDestroy();
   }
 
-  handleSearch(value: string) {
+  handleSearch(key?: string, value?: string) {
+    if (key && value) {
+      _.set(this.model, key, value);
+    }
+
     this.triggerSearch$.next(this.model);
   }
 
@@ -93,6 +110,12 @@ export class BaseListComponent<T extends object, L extends object>
 
   handleReset(newInstance: T) {
     this.model = newInstance;
+    this.triggerSearch$.next(this.model);
+  }
+
+  handleStartApi(): void {
+    this.skip$.next();
+    this.skip$.complete();
 
     this.triggerSearch$.next(this.model);
   }

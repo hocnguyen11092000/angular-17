@@ -14,6 +14,7 @@ import { IPost } from '../posts/post.interface';
 import { LoadingWrapComponent } from '../loading-wrap/loading-wrap.component';
 import { PhotoApiService } from '../../services/photo-api-service';
 import { IPhoto } from '../../interfaces';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-cache',
@@ -56,6 +57,7 @@ import { IPhoto } from '../../interfaces';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe, RouterLink, JsonPipe, FormsModule, LoadingWrapComponent],
+  providers: [CachedService],
 })
 export class CacheComponent implements OnInit {
   private readonly postApiService = inject(PostApiService);
@@ -63,10 +65,18 @@ export class CacheComponent implements OnInit {
   private readonly photoApiService = inject(PhotoApiService);
 
   model = new PostModel(null);
+  model$ = new BehaviorSubject<PostModel>(this.model);
+
   cachedPost = this.cachedService.withCached<Array<IPost>, PostModel>({
     queryKey: ['post'],
     queryFc: this.postApiService.getAllPosts.bind(this.postApiService),
     queryParams: this.model,
+  });
+
+  cachedPost2 = this.cachedService.withCached<Array<IPost>, PostModel>({
+    queryKey: ['post'],
+    queryFc: this.postApiService.getAllPosts.bind(this.postApiService),
+    queryParams: this.model$,
   });
 
   cachedPhoto = this.cachedService.withCached<Array<IPhoto>, PostModel>({
@@ -82,9 +92,15 @@ export class CacheComponent implements OnInit {
 
   handleChangeStart() {
     this.model._start = this.model._start + 5;
+    this.model$.next({
+      ...this.model$.getValue(),
+      _start: this.model$.value._start + 5,
+    });
   }
 
   handleSearch() {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.cachedPost2.data$.subscribe(console.log);
+  }
 }

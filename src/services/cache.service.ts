@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import * as _ from 'lodash';
 import {
   BehaviorSubject,
@@ -6,15 +6,20 @@ import {
   delay,
   finalize,
   Observable,
+  Subject,
+  switchMap,
   take,
+  takeUntil,
   tap,
   throwError,
 } from 'rxjs';
+import { CacheDataService } from './cacheData.service';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 
 export interface ICachedParams<T, F extends object> {
   queryKey: Array<string>;
   queryFc: (queryParams: F) => Observable<T>;
-  queryParams: F;
+  queryParams: F | BehaviorSubject<F>;
   options?: ICachedParamsOptions;
 }
 
@@ -31,24 +36,44 @@ export interface IQueryResponse<T> {
   error$: Observable<object | null>;
 }
 
-@Injectable({ providedIn: 'root' })
-export class CachedService {
-  constructor() {}
-  private cached = new BehaviorSubject<object | null>(null);
+@Injectable()
+export class CachedService implements OnDestroy {
+  constructor(
+    private readonly cacheDataService: CacheDataService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly router: Router
+  ) {}
+  //#region variables
+  private subjects: Array<BehaviorSubject<any>> = [];
+  //#endregion variable
+
+  //#region subjects
+  destroy$ = new Subject<void>();
+  //#endregion subjects
 
   public withCached<T, F extends object>(
     params: ICachedParams<T, F>
   ): IQueryResponse<T> {
+    //variables in params
     const { queryKey, queryFc, queryParams } = params;
 
+    //variables for response
     const data$ = new BehaviorSubject<T | null>(null);
     const loading$ = new BehaviorSubject<boolean>(false);
     const error$ = new BehaviorSubject<object | null>(null);
     const fetching$ = new BehaviorSubject<boolean>(false);
 
+    //store subjects and mark it as completed after service is destroyed
+    //service is destroyed when component inject it is destroyed (inject in component level)
+    this.subjects = [...this.subjects, data$, loading$, error$, fetching$];
+
     //check data in cache
-    const cachedKey = this.hashKey([...queryKey, queryParams]);
-    const cachedValue = _.get(this.cached.value, cachedKey);
+    const queryParamsValue =
+      queryParams instanceof BehaviorSubject
+        ? queryParams.getValue()
+        : queryParams;
+    const cachedKey = this.hashKey([...queryKey, queryParamsValue]);
+    const cachedValue = _.get(this.cacheDataService.cachedData, cachedKey);
 
     if (cachedValue) {
       fetching$.next(true);
@@ -57,33 +82,62 @@ export class CachedService {
       loading$.next(true);
     }
 
-    //query data & re update cache
-    queryFc(queryParams as F)
-      .pipe(
-        delay(1000),
-        tap((data: T) => {
-          if (data) {
-            this.cached.next({
-              ...this.cached.value,
-              [this.hashKey([...queryKey, queryParams])]: data,
-            });
+    if (queryParams instanceof BehaviorSubject) {
+      queryParams
+        .pipe(
+          switchMap((query: Params) => {
+            return queryFc(query as F).pipe(
+              delay(500),
+              catchError((err) => {
+                error$.next(err);
+                return throwError(() => err);
+              }),
+              finalize(() => {
+                loading$.next(false);
+                fetching$.next(false);
+              })
+            );
+          }),
+          tap((data: T) => {
+            if (data) {
+              this.handleStoreDataIntoCache<T, F>(
+                data,
+                queryKey,
+                queryParams.getValue()
+              );
 
-            console.log(this.cached.value);
+              data$.next(data);
+            }
+          }),
+          takeUntil(this.destroy$),
+          finalize(() => {
+            console.log('finalizing');
+          })
+        )
+        .subscribe();
+    } else {
+      queryFc(queryParams as F)
+        .pipe(
+          delay(500),
+          tap((data: T) => {
+            if (data) {
+              this.handleStoreDataIntoCache<T, F>(data, queryKey, queryParams);
 
-            data$.next(data);
-          }
-        }),
-        catchError((err) => {
-          error$.next(err);
-          return throwError(() => err);
-        }),
-        finalize(() => {
-          loading$.next(false);
-          fetching$.next(false);
-        }),
-        take(1)
-      )
-      .subscribe();
+              data$.next(data);
+            }
+          }),
+          catchError((err) => {
+            error$.next(err);
+            return throwError(() => err);
+          }),
+          finalize(() => {
+            loading$.next(false);
+            fetching$.next(false);
+          }),
+          take(1)
+        )
+        .subscribe();
+    }
 
     return {
       data$: data$.asObservable() as Observable<T>,
@@ -93,7 +147,29 @@ export class CachedService {
     };
   }
 
+  private handleStoreDataIntoCache<T, F>(
+    data: T,
+    queryKey: Array<string>,
+    queryParams: F
+  ) {
+    this.cacheDataService.cachedData = {
+      ...this.cacheDataService.cachedData,
+      [this.hashKey([...queryKey, queryParams])]: data,
+    };
+  }
+
   private hashKey<T>(key: Array<T>): string {
     return JSON.stringify(key);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    _.forEach(this.subjects, (subject) => {
+      subject.complete();
+    });
+
+    console.log('service destroyed');
   }
 }
