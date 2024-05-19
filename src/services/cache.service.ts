@@ -36,6 +36,12 @@ export interface IQueryResponse<T> {
   error$: Observable<object | null>;
 }
 
+export type TQueryResponse<T> = {
+  [key in keyof IQueryResponse<T>]: BehaviorSubject<
+    IQueryResponse<T>[key] extends Observable<infer O> ? O : never
+  >;
+};
+
 @Injectable()
 export class CachedService implements OnDestroy {
   constructor(
@@ -55,7 +61,7 @@ export class CachedService implements OnDestroy {
     params: ICachedParams<T, F>
   ): IQueryResponse<T> {
     //variables in params
-    const { queryKey, queryFc, queryParams } = params;
+    const { queryKey, queryFc, queryParams, options } = params;
 
     //variables for response
     const data$ = new BehaviorSubject<T | null>(null);
@@ -72,19 +78,25 @@ export class CachedService implements OnDestroy {
       queryParams instanceof BehaviorSubject
         ? queryParams.getValue()
         : queryParams;
-    const cachedKey = this.hashKey([...queryKey, queryParamsValue]);
-    const cachedValue = _.get(this.cacheDataService.cachedData, cachedKey);
 
-    if (cachedValue) {
-      fetching$.next(true);
-      data$.next(cachedValue);
-    } else {
-      loading$.next(true);
-    }
+    this.handleCheckAndResolveCache(queryKey, queryParamsValue, {
+      loading$,
+      data$,
+      fetching$,
+    });
 
     if (queryParams instanceof BehaviorSubject) {
       queryParams
         .pipe(
+          tap((query: Params) => {
+            this.handleSyncQueryParams(options!, query);
+
+            this.handleCheckAndResolveCache(queryKey, query, {
+              loading$,
+              data$,
+              fetching$,
+            });
+          }),
           switchMap((query: Params) => {
             return queryFc(query as F).pipe(
               delay(500),
@@ -116,13 +128,14 @@ export class CachedService implements OnDestroy {
         )
         .subscribe();
     } else {
+      this.handleSyncQueryParams(options!, queryParams);
+
       queryFc(queryParams as F)
         .pipe(
           delay(500),
           tap((data: T) => {
             if (data) {
               this.handleStoreDataIntoCache<T, F>(data, queryKey, queryParams);
-
               data$.next(data);
             }
           }),
@@ -171,5 +184,38 @@ export class CachedService implements OnDestroy {
     });
 
     console.log('service destroyed');
+  }
+
+  private handleCheckAndResolveCache<T>(
+    queryKey: Array<string>,
+    query: Params,
+    state: Pick<TQueryResponse<T>, 'data$' | 'fetching$' | 'loading$'>
+  ) {
+    const { fetching$, loading$, data$ } = state;
+
+    const cachedKey = this.hashKey([...queryKey, query]);
+    const cachedValue = _.get(this.cacheDataService.cachedData, cachedKey);
+
+    if (cachedValue) {
+      fetching$.next(true);
+      data$.next(cachedValue);
+    } else {
+      loading$.next(true);
+    }
+  }
+
+  private handleSyncQueryParams<T extends ICachedParamsOptions>(
+    options: T,
+    queryParams: Params
+  ) {
+    if (!_.size(options)) return;
+
+    const { url, syncUrl } = options;
+    if (url && syncUrl) {
+      this.router.navigate([`/${url}`], {
+        relativeTo: this.activatedRoute,
+        queryParams,
+      });
+    }
   }
 }

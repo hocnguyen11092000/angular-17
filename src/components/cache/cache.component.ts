@@ -1,3 +1,7 @@
+import {
+  BasePagination,
+  IBasePagination,
+} from './../base-pagination/base-pagination';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -19,12 +23,31 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-cache',
   template: `
+    <style>
+      .pagination {
+        display: flex;
+        gap: 4px;
+        margin: 12px 0;
+      }
+
+      .pagination li {
+        border: 1px solid #ccc;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      .pagination li.active {
+        background-color: #005e85;
+        color: #fff;
+      }
+    </style>
     <h3>cache component</h3>
     <app-loading-wrap
-      [loading]="(cachedPost.loading$ | async)!"
-      [fetching]="(cachedPost.fetching$ | async)!"
+      [loading]="(cachedPost2.loading$ | async)!"
+      [fetching]="(cachedPost2.fetching$ | async)!"
     >
-      @if(cachedPost.data$ | async; as data) { @for (item of data; track
+      @if(cachedPost2.data$ | async; as data) { @for (item of data; track
       $index){
       <p style="cursor: pointer;" [routerLink]="['/cache', item.id]">
         {{ item.title }}
@@ -37,12 +60,18 @@ import { BehaviorSubject } from 'rxjs';
         <input
           type="text"
           placeholder="search..."
-          [(ngModel)]="model.title_like"
+          [(ngModel)]="model$.value.title_like"
         />
       </div>
     </app-loading-wrap>
-
-    @if(cachedPhoto.loading$ | async) {
+    <ul class="pagination">
+      @for (item of pages; let i = $index; track i;) {
+      <li (click)="handlePageChange(i + 1)" [class.active]="active(i)">
+        {{ i + 1 }}
+      </li>
+      }
+    </ul>
+    <!-- @if(cachedPhoto.loading$ | async) {
     <div>photo loading...</div>
     } @if(cachedPhoto.fetching$ | async) {
     <div>photo fetching...</div>
@@ -52,55 +81,71 @@ import { BehaviorSubject } from 'rxjs';
       {{ item.title }}
     </p>
     <img [src]="item.url" alt="" />
-    } }
+    } } -->
   `,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe, RouterLink, JsonPipe, FormsModule, LoadingWrapComponent],
   providers: [CachedService],
 })
-export class CacheComponent implements OnInit {
+export class CacheComponent
+  extends BasePagination<PostModel>
+  implements OnInit
+{
   private readonly postApiService = inject(PostApiService);
   private readonly cachedService = inject(CachedService);
   private readonly photoApiService = inject(PhotoApiService);
 
-  model = new PostModel(null);
-  model$ = new BehaviorSubject<PostModel>(this.model);
+  override model$ = new BehaviorSubject<PostModel>(new PostModel(null));
+  pages = new Array(10);
 
   cachedPost = this.cachedService.withCached<Array<IPost>, PostModel>({
     queryKey: ['post'],
     queryFc: this.postApiService.getAllPosts.bind(this.postApiService),
-    queryParams: this.model,
+    queryParams: this.model$.value,
   });
 
   cachedPost2 = this.cachedService.withCached<Array<IPost>, PostModel>({
-    queryKey: ['post'],
+    queryKey: ['post-2'],
     queryFc: this.postApiService.getAllPosts.bind(this.postApiService),
     queryParams: this.model$,
-  });
-
-  cachedPhoto = this.cachedService.withCached<Array<IPhoto>, PostModel>({
-    queryKey: ['photo'],
-    queryFc: this.photoApiService.getAllPhotos.bind(this.photoApiService),
-    queryParams: this.model,
     options: {
       syncUrl: true,
       url: 'cache',
     },
   });
+
+  cachedPhoto = this.cachedService.withCached<Array<IPhoto>, PostModel>({
+    queryKey: ['photo'],
+    queryFc: this.photoApiService.getAllPhotos.bind(this.photoApiService),
+    queryParams: this.model$.value,
+  });
   count = 0;
 
   handleChangeStart() {
-    this.model._start = this.model._start + 5;
     this.model$.next({
       ...this.model$.getValue(),
       _start: this.model$.value._start + 5,
     });
   }
 
-  handleSearch() {}
+  handleSearch() {
+    this.model$.next({
+      ...this.model$.getValue(),
+    });
+  }
 
   ngOnInit(): void {
-    this.cachedPost2.data$.subscribe(console.log);
+    // this.cachedPost2.data$.subscribe(console.log);
+  }
+
+  active(index: number) {
+    const model = this.model$.getValue();
+
+    if (model._start === 0) {
+      return model._start === index;
+    }
+
+    return model._start / model._limit === index + 1;
   }
 }

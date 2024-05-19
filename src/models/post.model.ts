@@ -1,3 +1,4 @@
+import { IBasePagination } from './../components/base-pagination/base-pagination';
 import _ from 'lodash';
 import { IPostQueryParams } from '../interfaces';
 
