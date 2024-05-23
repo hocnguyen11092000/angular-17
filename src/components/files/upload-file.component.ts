@@ -13,6 +13,7 @@ import { BehaviorSubject, Subject, concatMap, filter, from, tap } from 'rxjs';
 import { FileService } from './file.service';
 import { CommonModule } from '@angular/common';
 import { FileItemSkeleton } from './file-item-skeletone.component';
+import { PostApiClient } from '../../api/services/post-api-client.service';
 
 @Component({
   selector: 'app-upload-file',
@@ -73,11 +74,19 @@ import { FileItemSkeleton } from './file-item-skeletone.component';
   ],
 })
 export class UploadFileComponent implements ControlValueAccessor, OnInit {
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.postClient
+      .getPosts({
+        _start: 0,
+        _limit: 10,
+      })
+      .subscribe(console.log);
+  }
 
   //#region inject services
   private readonly fileService = inject(FileService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly postClient = inject(PostApiClient);
   //#endregion inject services
 
   //#region bindings for control value assessor
