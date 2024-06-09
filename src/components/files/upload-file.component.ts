@@ -157,15 +157,31 @@ export class UploadFileComponent implements ControlValueAccessor, OnInit {
       from(filterFile)
         .pipe(
           concatMap((file) => {
-            return this.fileService.uploadFile(_.get(file, 'name'));
+            return this.fileService.upload({
+              body: {
+                file,
+              },
+            });
           })
         )
-        .subscribe((file) => {
-          if (file) {
-            this.files = [...this.files, file];
+        .subscribe((res) => {
+          if (res) {
+            this.files = [...this.files, res];
             this.cdr.markForCheck();
           }
         });
+      // from(filterFile)
+      //   .pipe(
+      //     concatMap((file) => {
+      //       return this.fileService.uploadFile(_.get(file, 'name'));
+      //     })
+      //   )
+      //   .subscribe((file) => {
+      //     if (file) {
+      //       this.files = [...this.files, file];
+      //       this.cdr.markForCheck();
+      //     }
+      //   });
     }
   }
 

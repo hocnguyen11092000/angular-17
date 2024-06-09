@@ -79,9 +79,12 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
           alt=""
           width="80"
         />
-        <div class="file-desc" *ngIf="item?.['name']">
-          <div class="file-name" [tooltip]="item?.['name'] + ''">
-            {{(item?.['name'] || '') | showFileName}}
+        <div class="file-desc" *ngIf="item?.['name'] || item?.['originalname']">
+          <div
+            class="file-name"
+            [tooltip]="(item?.['name'] || item?.['originalname']) + ''"
+          >
+            {{(item?.['name'] || item?.['originalname'] ||  '') | showFileName}}
           </div>
           <div class="file-download">
             <svg
