@@ -56,7 +56,13 @@ export const routes: Routes = [
       (await import('../components/defer/defer.component')).DeferComponent,
     title: 'defer detail',
   },
-
+  {
+    path: 'css-grid',
+    loadComponent: async () =>
+      (await import('../components/css-grid/css-grid.component'))
+        .CssGridComponent,
+    title: 'css grid',
+  },
   {
     path: '',
     children: [
